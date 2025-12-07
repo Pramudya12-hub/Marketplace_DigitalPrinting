@@ -13,6 +13,6 @@ Aplikasi ini memungkinkan pengguna untuk melihat produk-produk digital printing,
 - Antarmuka GUI sederhana dan mudah digunakan
 
 ## Teknologi yang Digunakan
-- Python 3.x  
+- Python 3.12.6
 - Tkinter (GUI)  
 - Konsep OOP: Inheritance, Encapsulation, Polymorphism
