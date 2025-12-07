@@ -1,103 +1,95 @@
+# =====================================================
+# Import library Tkinter untuk GUI
+# =====================================================
 import tkinter as tk
 from tkinter import messagebox
 
-# ==========================================
-#           CLASS PRODUCT OOP
-# ==========================================
+# =====================================================
+#                CLASS PRODUCT (SUPERCLASS)
+# =====================================================
+
 class Product:
+    # Constructor: menyimpan nama dan harga produk
     def __init__(self, name, price):
-        self.__name = name
-        self.__price = price
-    
+        self.__name = name      # atribut nama (private)
+        self.__price = price    # atribut harga (private)
+
+    # Getter untuk mengambil nama produk
     def get_name(self):
         return self.__name
-    
+
+    # Getter untuk mengambil harga produk
     def get_price(self):
         return self.__price
-    
+
+    # Method dasar diskon (akan dioverride di subclass)
     def apply_discount(self):
         return self.__price
 
 
+# =====================================================
+#         SUBCLASS PRODUK DENGAN POLYMORPHISM
+# =====================================================
+
 class Banner(Product):
+    # Override method diskon → Banner diskon 5%
     def apply_discount(self):
         return self.get_price() * 0.95
 
 
 class PhotoPrint(Product):
+    # Override method diskon → PhotoPrint diskon 2%
     def apply_discount(self):
         return self.get_price() * 0.98
 
 
 class Merch(Product):
+    # Override method diskon → Merchandise diskon 10%
     def apply_discount(self):
         return self.get_price() * 0.90
 
 
+# =====================================================
+#                    CLASS CART (KERANJANG)
+# =====================================================
+
 class Cart:
     def __init__(self):
-        self.items = []
-    
+        self.items = []     # list untuk menyimpan objek Product
+
+    # Menambahkan produk ke keranjang
     def add(self, product):
         self.items.append(product)
-    
+
+    # Menghapus produk berdasarkan index
     def remove(self, index):
         if 0 <= index < len(self.items):
             del self.items[index]
-    
+
+    # Menghitung total harga setelah diskon
     def get_total(self):
         return sum(item.apply_discount() for item in self.items)
 
 
-# ==========================================
-#           PROFESSIONAL UI + SHADOW
-# ==========================================
+# =====================================================
+#                CLASS GUI MARKETPLACE
+# =====================================================
+
 class MarketplaceApp:
     def __init__(self, master):
         self.master = master
         master.title("Marketplace Digital Printing")
+
+        # Ukuran window
         master.geometry("950x550")
-        master.configure(bg="#eef2f7")   
+        master.configure(bg="#eef2f7")  # warna background utama
 
-        # Professional Color Palette
-        frame_bg = "#ffffff"
-        accent_blue = "#2f4e78"
-        accent_light = "#4c6ea8"
-        border_color = "#d0d7e2"
-        shadow_color = "#c7ccd4"
-        danger = "#d9534f"
-        danger_hover = "#c9302c"
-        font_main = ("Segoe UI", 10)
-        font_title = ("Segoe UI", 12, "bold")
-
+        # Keranjang sebagai objek Cart
         self.cart = Cart()
-        #     SHADOW FRAME FUNCTION
-        def create_shadow(x, y, parent):
-            shadow = tk.Frame(parent, bg=shadow_color)
-            shadow.place(x=x+3, y=y+3, width=350, height=430)
-            return shadow
 
-        #     FRAME PRODUK + SHADOW
-        create_shadow(30, 25, master)       # Shadow behind product frame
-
-        left_frame = tk.Frame(master, bg=frame_bg, bd=1, relief="solid")
-        left_frame.place(x=30, y=25, width=350, height=430)
-
-        # Header Accent
-        tk.Frame(left_frame, bg=accent_blue, height=4).pack(fill="x")
-
-        tk.Label(
-            left_frame, text="Daftar Produk", bg=frame_bg, fg=accent_blue,
-            font=font_title, pady=10
-        ).pack()
-
-        self.product_listbox = tk.Listbox(
-            left_frame, width=42, height=15, bg="#f9fbff",
-            fg="#1e2a38", font=font_main,
-            selectbackground="#c7dbf4", highlightbackground=border_color
-        )
-        self.product_listbox.pack(padx=15, pady=5)
-
+        # =====================================================
+        #            DAFTAR PRODUK (OBJEK PRODUCT)
+        # =====================================================
         self.products = [
             Banner("Banner 1x1 m", 30000),
             Banner("Banner 2x1 m", 55000),
@@ -110,86 +102,85 @@ class MarketplaceApp:
             Merch("Stiker A4", 5000)
         ]
 
+        # =====================================================
+        #                  FRAME DAFTAR PRODUK
+        # =====================================================
+
+        self.product_listbox = tk.Listbox(master, width=40, height=18)
+        self.product_listbox.place(x=50, y=60)
+
+        # Masukkan produk ke listbox
         for p in self.products:
-            self.product_listbox.insert(tk.END, f"{p.get_name()} - Rp {p.get_price():,}")
+            self.product_listbox.insert(
+                tk.END,
+                f"{p.get_name()} - Rp {p.get_price():,}"
+            )
 
-        # Add Button
+        # Tombol tambah ke keranjang
         self.add_button = tk.Button(
-            left_frame, text="Tambah ke Keranjang",
-            command=self.add_to_cart, width=30,
-            bg=accent_light, fg="white", font=font_main, bd=0, pady=7
+            master,
+            text="Tambah ke Keranjang",
+            command=self.add_to_cart,
+            width=25
         )
-        self.add_button.pack(pady=10)
-        self.add_button.bind("<Enter>", lambda e: self.add_button.config(bg="#3d5f92"))
-        self.add_button.bind("<Leave>", lambda e: self.add_button.config(bg=accent_light))
+        self.add_button.place(x=50, y=360)
 
-        # ==========================================
-        #     FRAME KERANJANG + SHADOW
-        # ==========================================
-        create_shadow(410, 25, master)      # Shadow behind cart frame
+        # =====================================================
+        #                   FRAME KERANJANG
+        # =====================================================
 
-        right_frame = tk.Frame(master, bg=frame_bg, bd=1, relief="solid")
-        right_frame.place(x=410, y=25, width=350, height=430)
+        self.cart_listbox = tk.Listbox(master, width=40, height=18)
+        self.cart_listbox.place(x=500, y=60)
 
-        tk.Frame(right_frame, bg=accent_blue, height=4).pack(fill="x")
-
-        tk.Label(
-            right_frame, text="Keranjang Belanja", bg=frame_bg, fg=accent_blue,
-            font=font_title, pady=10
-        ).pack()
-
-        self.cart_listbox = tk.Listbox(
-            right_frame, width=42, height=15, bg="#f9fbff",
-            fg="#1e2a38", font=font_main,
-            selectbackground="#f7c6c7", highlightbackground=border_color
-        )
-        self.cart_listbox.pack(padx=15, pady=5)
-
+        # Tombol hapus item
         self.remove_button = tk.Button(
-            right_frame, text="Hapus Item",
-            command=self.remove_item, width=30,
-            bg=danger, fg="white", font=font_main, bd=0, pady=7
+            master,
+            text="Hapus Item",
+            command=self.remove_item,
+            width=20
         )
-        self.remove_button.pack(pady=10)
-        self.remove_button.bind("<Enter>", lambda e: self.remove_button.config(bg=danger_hover))
-        self.remove_button.bind("<Leave>", lambda e: self.remove_button.config(bg=danger))
+        self.remove_button.place(x=500, y=360)
 
-        # ==========================================
-        #            TOTAL & CHECKOUT
-        # ==========================================
-        self.total_label = tk.Label(
-            master, text="Total: Rp 0",
-            font=("Segoe UI", 16, "bold"),
-            bg="#eef2f7", fg=accent_blue
-        )
-        self.total_label.place(x=300, y=470)
+        # Label total harga
+        self.total_label = tk.Label(master, text="Total: Rp 0",
+                                    font=("Arial", 14, "bold"), bg="#eef2f7")
+        self.total_label.place(x=50, y=420)
 
+        # Tombol checkout
         self.checkout_button = tk.Button(
-            master, text="Checkout",
-            command=self.checkout, width=20,
-            bg=accent_light, fg="white",
-            font=("Segoe UI", 12, "bold"), bd=0, pady=7
+            master,
+            text="Checkout",
+            command=self.checkout,
+            width=20
         )
-        self.checkout_button.place(x=520, y=465)
+        self.checkout_button.place(x=500, y=420)
 
-        self.checkout_button.bind("<Enter>", lambda e: self.checkout_button.config(bg="#3d5f92"))
-        self.checkout_button.bind("<Leave>", lambda e: self.checkout_button.config(bg=accent_light))
-
-    # =============================
-    #        FUNCTIONAL
-    # =============================
+    # =====================================================
+    #               METHOD: TAMBAH KE KERANJANG
+    # =====================================================
     def add_to_cart(self):
         index = self.product_listbox.curselection()
+
         if index:
             product = self.products[index[0]]
             self.cart.add(product)
-            self.cart_listbox.insert(tk.END, f"{product.get_name()} - Rp {product.apply_discount():,.0f}")
+
+            # Tampilkan item di keranjang
+            self.cart_listbox.insert(
+                tk.END,
+                f"{product.get_name()} - Rp {product.apply_discount():,.0f}"
+            )
+
             self.update_total()
         else:
             messagebox.showwarning("Error", "Pilih produk terlebih dahulu")
 
+    # =====================================================
+    #               METHOD: HAPUS ITEM CART
+    # =====================================================
     def remove_item(self):
         index = self.cart_listbox.curselection()
+
         if index:
             self.cart.remove(index[0])
             self.cart_listbox.delete(index)
@@ -197,16 +188,30 @@ class MarketplaceApp:
         else:
             messagebox.showwarning("Error", "Pilih item di keranjang")
 
+    # =====================================================
+    #               METHOD: UPDATE TOTAL HARGA
+    # =====================================================
     def update_total(self):
         total = self.cart.get_total()
         self.total_label.config(text=f"Total: Rp {total:,.0f}")
 
+    # =====================================================
+    #                 METHOD: CHECKOUT
+    # =====================================================
     def checkout(self):
         total = self.cart.get_total()
+
         messagebox.showinfo("Checkout", f"Total Belanja Anda: Rp {total:,.0f}")
+
+        # Reset cart setelah checkout
         self.cart.items.clear()
         self.cart_listbox.delete(0, tk.END)
         self.update_total()
+
+
+# =====================================================
+#                 MENJALANKAN APLIKASI
+# =====================================================
 
 root = tk.Tk()
 app = MarketplaceApp(root)
